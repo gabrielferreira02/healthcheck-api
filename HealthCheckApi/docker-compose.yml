@@ -1,0 +1,19 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    ports:
+      - 1433:1433
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=MinhaSenha123
+      - MSSQL_PID=Express
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1GB
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
+volumes:
+  sqlserver_data:
