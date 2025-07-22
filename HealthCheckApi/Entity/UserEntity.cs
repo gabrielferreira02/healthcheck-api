@@ -2,7 +2,7 @@ using System;
 
 namespace HealthCheckApi.Entity;
 
-internal class UserEntity
+public class UserEntity
 {
     public Guid Id { get; init; }
     public string Username { get; private set; }
@@ -20,5 +20,13 @@ internal class UserEntity
         Email = email;
         Password = password;
         CreatedAt = DateTime.Now;
+    }
+
+    public void UpdateUsername(string username) {
+        Username = username;
+    }
+
+    public void UpdateEmail(string email) {
+        Email = email;
     }
 }

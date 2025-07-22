@@ -2,7 +2,7 @@ using HealthCheckApi.Enums;
 
 namespace HealthCheckApi.Entity;
 
-internal class UrlEntity
+public class UrlEntity
 {
     public Guid Id { get; init; }
     public UserEntity? User { get; private set; }
