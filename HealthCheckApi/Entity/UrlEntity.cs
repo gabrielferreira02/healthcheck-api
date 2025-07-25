@@ -16,19 +16,28 @@ public class UrlEntity
     public UrlEntity() { }
 
     public UrlEntity(
-        UserEntity user,
+        Guid userId,
         string url,
         int interval
     )
     {
         Id = Guid.NewGuid();
-        User = user;
-        UserId = user.Id;
+        UserId = userId;
         Url = url;
         Interval = interval;
         LastStatus = HealthStatus.UP;
         NextCheck = DateTime.Now.AddMinutes(Interval);
         CreatedAt = DateTime.Now;
+    }
+
+    public void UpdateUrl(string url)
+    {
+        Url = url;
+    }
+
+    public void UpdateInterval(int interval)
+    {
+        Interval = interval;
     }
 
 }
