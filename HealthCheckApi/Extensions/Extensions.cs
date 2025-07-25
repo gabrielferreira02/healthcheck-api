@@ -15,6 +15,10 @@ public static class Extensions
         services.AddTransient<IUserRepository, UserRepository>();
         services.AddScoped<IValidator<CreateUserRequest>, CreateUserRequestValidator>();
         services.AddScoped<IUserService, UserService>();
+        services.AddTransient<IUrlRepository, UrlRepository>();
+        services.AddScoped<IUrlService, UrlService>();
+        services.AddScoped<IValidator<CreateUrlRequest>, CreateUrlRequestValidator>();
+        services.AddScoped<IValidator<UpdateUrlRequest>, UpdateUrlRequestValidator>();
 
         return services;
     }
