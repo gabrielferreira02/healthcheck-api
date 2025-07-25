@@ -1,7 +1,7 @@
 namespace HealthCheckApi.Dto;
 
 public record class UpdateUrlRequest(
-    Guid UserId,
+    Guid Id,
     string NewUrl,
     int Interval
 );
