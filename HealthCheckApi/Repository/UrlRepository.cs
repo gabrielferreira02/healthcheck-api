@@ -17,7 +17,7 @@ internal sealed class UrlRepository : IUrlRepository
 
     public async Task<UrlEntity> CreateUrlAsync(UrlEntity url, CancellationToken ct = default)
     {
-        await _context.Urls.AddAsync(url,ct);
+        await _context.Urls.AddAsync(url, ct);
         await _context.SaveChangesAsync(ct);
         return url;
     }
@@ -49,5 +49,11 @@ internal sealed class UrlRepository : IUrlRepository
         _context.Urls.Update(url);
         await _context.SaveChangesAsync(ct);
         return url;
+    }
+
+    public async Task<List<UrlEntity>> GetUrlsToCheckAsync(CancellationToken ct = default)
+    {
+        var urls = await _context.Urls.Where(x => x.NextCheck <= DateTime.Now).ToListAsync(ct);
+        return urls;
     }
 }
