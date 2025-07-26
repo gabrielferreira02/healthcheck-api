@@ -40,4 +40,14 @@ public class UrlEntity
         Interval = interval;
     }
 
+    public void UpdateStatus(HealthStatus status)
+    {
+        LastStatus = status;
+    }
+
+    public void UpdateNextCheck()
+    {
+        NextCheck = DateTime.Now.AddMinutes(Interval);
+    }
+
 }
