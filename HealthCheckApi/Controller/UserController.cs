@@ -1,11 +1,7 @@
-using FluentValidation;
 using HealthCheckApi.Dto;
-using HealthCheckApi.Entity;
 using HealthCheckApi.Enums;
-using HealthCheckApi.Helpers;
-using HealthCheckApi.Repository.Abstractions;
 using HealthCheckApi.Services.Abstractions;
-using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HealthCheckApi.Controller;
@@ -42,6 +38,7 @@ public sealed class UserController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "USER")]
     public async Task<IActionResult> DeleteUser([FromRoute] Guid id, CancellationToken ct)
     {
         await _userService.DeleteUser(id, ct);
@@ -49,6 +46,7 @@ public sealed class UserController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize(Roles = "USER")]
     public async Task<IActionResult> GetUserById([FromRoute] Guid id, CancellationToken ct)
     {
         var result = await _userService.GetUserById(id, ct);
