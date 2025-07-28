@@ -1,18 +1,22 @@
 using FluentValidation;
+using HealthCheckApi.Auth;
+using HealthCheckApi.Auth.Abstractions;
 using HealthCheckApi.Consumers;
 using HealthCheckApi.Dto;
+using HealthCheckApi.Helpers;
 using HealthCheckApi.Repository;
 using HealthCheckApi.Repository.Abstractions;
 using HealthCheckApi.Services;
 using HealthCheckApi.Services.Abstractions;
 using HealthCheckApi.Validators;
 using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace HealthCheckApi.Extensions;
 
 public static class Extensions
 {
-    public static IServiceCollection AddDependencies(this IServiceCollection services)
+    public static IServiceCollection AddDependencies(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddTransient<IUserRepository, UserRepository>();
         services.AddScoped<IValidator<CreateUserRequest>, CreateUserRequestValidator>();
@@ -22,6 +26,9 @@ public static class Extensions
         services.AddScoped<IValidator<CreateUrlRequest>, CreateUrlRequestValidator>();
         services.AddScoped<IValidator<UpdateUrlRequest>, UpdateUrlRequestValidator>();
         services.AddHostedService<UrlHealthChecker>();
+        services.AddScoped<ITokenManager, TokenManager>();
+
+        // Rabbit Mq Configuration
         services.AddMassTransit(busConfigurator =>
         {
             busConfigurator.AddConsumer<SimulateSendEmailConsumer>();
@@ -37,6 +44,16 @@ public static class Extensions
                 cfg.ConfigureEndpoints(ctx);
             });
         });
+
+        // Authentication and authorization config
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options => options.TokenValidationParameters = TokenHelper.ValidateToken(configuration));
+
+        services.AddAuthorization();
 
         return services;
     }
