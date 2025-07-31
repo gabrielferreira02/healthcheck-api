@@ -4,5 +4,6 @@ public enum TypeErrors
 {
     Validation,
     BusinessRule,
-    NotFound
+    NotFound,
+    Unauthorized
 }
