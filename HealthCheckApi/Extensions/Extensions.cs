@@ -27,6 +27,7 @@ public static class Extensions
         services.AddScoped<IValidator<UpdateUrlRequest>, UpdateUrlRequestValidator>();
         services.AddHostedService<UrlHealthChecker>();
         services.AddScoped<ITokenManager, TokenManager>();
+        services.AddScoped<IAuthService, AuthService>();
 
         // Rabbit Mq Configuration
         services.AddMassTransit(busConfigurator =>
