@@ -65,7 +65,7 @@ internal sealed class TokenManager : ITokenManager
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public async Task<(bool isValid, string? userEmail)> ValidarRefreshToken(string token)
+    public async Task<(bool isValid, string? userEmail)> ValidateRefreshToken(string token)
     {
         if (string.IsNullOrWhiteSpace(token))
             return (false, null);
