@@ -15,7 +15,7 @@ public class SimulateSendEmailConsumer : IConsumer<EmailPayload>
     public Task Consume(ConsumeContext<EmailPayload> context)
     {
         var message = context.Message;
-        _logger.LogInformation("Sending Email ------\nUser Id: {userId}\nStatus: {status}\nUrl: {url}\nVerified At: {date}", message.UserId, message.Status, message.Url, message.VerifiedAt);
+        _logger.LogInformation("Email enviado ------\nUser Id: {userId}\nStatus: {status}\nUrl: {url}\nVerified At: {date}", message.UserId, message.Status, message.Url, message.VerifiedAt);
         return Task.CompletedTask;
     }
 }

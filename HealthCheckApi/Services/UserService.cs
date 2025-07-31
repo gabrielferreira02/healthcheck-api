@@ -16,13 +16,16 @@ public class UserService : IUserService
 {
     private readonly IUserRepository _repository;
     private readonly IValidator<CreateUserRequest> _createUserValidator;
+    private readonly ILogger<UserService> _logger;
 
     public UserService(
         IUserRepository repository,
-        IValidator<CreateUserRequest> createUserValidator)
+        IValidator<CreateUserRequest> createUserValidator,
+        ILogger<UserService> logger)
     {
         _repository = repository;
         _createUserValidator = createUserValidator;
+        _logger = logger;
     }
 
     public async Task<OneOf<UserResponse, AppError>> CreateUser(CreateUserRequest request, CancellationToken ct)
@@ -40,24 +43,30 @@ public class UserService : IUserService
 
             var problemDetails = new ValidationProblemDetails(errors);
 
+            _logger.LogWarning("Falha ao criar usuário. Erros de validação");
             return new ValidationError(problemDetails);
         }
 
         var userWithEmail = await _repository.GetUserByEmail(request.Email, ct);
 
         if (userWithEmail is not null)
+        { 
+            _logger.LogWarning("Falha ao criar usuário. Email já cadastrado: {email}", request.Email);
             return new EmailAlreadyExistsError();
+        }
 
         var password = PasswordHasher.HashPassword(request.Password);
         var user = new UserEntity(request.Username, request.Email, password);
         var newUser = await _repository.CreateUserAsync(user, ct);
 
+        _logger.LogInformation("Novo usuário cadastrado com email: {email}", request.Email);
         return new UserResponse(newUser.Id, newUser.Username, newUser.Email);
     }
 
     public async Task DeleteUser(Guid id, CancellationToken ct)
     {
         await _repository.DeleteUser(id, ct);
+        _logger.LogInformation("Usuário com id {id} deletado", id);
     }
 
     public async Task<OneOf<UserResponse, AppError>> GetUserById(Guid id, CancellationToken ct)
@@ -65,8 +74,12 @@ public class UserService : IUserService
         var user = await _repository.GetUserByIdAsync(id, ct);
 
         if (user is null)
+        {
+            _logger.LogWarning("Usuário com id {id} não encontrado", id);
             return new UserNotFoundError();
+        }
 
+        _logger.LogInformation("Usuário com id {id} encontrado", id);
         return new UserResponse(user.Id, user.Username, user.Email);
     }
 }

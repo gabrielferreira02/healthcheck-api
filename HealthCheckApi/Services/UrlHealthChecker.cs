@@ -26,22 +26,21 @@ public class UrlHealthChecker : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            _logger.LogInformation("Start checking urls");
+            _logger.LogInformation("Verificação iniciada");
 
             using var scope = _service.CreateScope();
             var repository = scope.ServiceProvider.GetRequiredService<IUrlRepository>();
 
             var urls = await repository.GetUrlsToCheckAsync(stoppingToken);
-            _logger.LogWarning("URLS ENCONTRADAS: {size}", urls.Count);
 
             foreach (var url in urls)
             {
-                _logger.LogInformation("Verifying: {url}", url.Url);
+                _logger.LogInformation("Verificando: {url}", url.Url);
                 var result = await VerifyUrl(url.Url);
 
                 if (result != url.LastStatus)
                 {
-                    _logger.LogInformation("Status changed for url: {url} from {prev} to {curr}", url.Url, url.LastStatus, result);
+                    _logger.LogInformation("Status alterado da url: {url} de {prev} para {curr}", url.Url, url.LastStatus, result);
                     url.UpdateStatus(result);
                     var payload = new EmailPayload(url.UserId, url.Url, result, DateTime.Now);
                     await _bus.Publish(payload, stoppingToken);
@@ -52,7 +51,7 @@ public class UrlHealthChecker : BackgroundService
             }
 
 
-            _logger.LogInformation("End checking urls");
+            _logger.LogInformation("Verificação finalizada");
             await Task.Delay(60000, stoppingToken);
         }
     }
