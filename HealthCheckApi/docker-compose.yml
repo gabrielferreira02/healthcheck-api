@@ -10,8 +10,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "1"
-          memory: 1GB
+          cpus: "0.7"
+          memory: 400MB
     volumes:
       - sqlserver_data:/var/opt/mssql
   rabbitmq:
@@ -24,7 +24,14 @@ services:
       RABBITMQ_DEFAULT_PASS: guest
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
 
 volumes:
   sqlserver_data:
   rabbitmq_data:
+  redis_data:
