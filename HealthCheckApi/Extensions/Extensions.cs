@@ -46,6 +46,14 @@ public static class Extensions
             });
         });
 
+        // Redis config
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = configuration.GetConnectionString("Redis");
+            options.InstanceName = "HealthCheckApi";
+        });
+        services.AddScoped<ICacheService, CacheService>();
+
         // Authentication and authorization config
         services.AddAuthentication(options =>
         {
