@@ -7,6 +7,7 @@ using HealthCheckApi.Repository.Abstractions;
 using HealthCheckApi.Services.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 using OneOf;
+using StackExchange.Redis;
 
 namespace HealthCheckApi.Services;
 
@@ -17,19 +18,22 @@ public sealed class UrlService : IUrlService
     private readonly IUserRepository _userRepository;
     private readonly IValidator<UpdateUrlRequest> _updateUrlValidator;
     private readonly ILogger<UrlService> _logger;
+    private readonly ICacheService _cache;
 
     public UrlService(
         IUrlRepository urlRepository,
         IValidator<CreateUrlRequest> createUrlValidator,
         IUserRepository userRepository,
         IValidator<UpdateUrlRequest> updateUrlValidator,
-        ILogger<UrlService> logger)
+        ILogger<UrlService> logger,
+        ICacheService cache)
     {
         _urlRepository = urlRepository;
         _createUrlValidator = createUrlValidator;
         _userRepository = userRepository;
         _updateUrlValidator = updateUrlValidator;
         _logger = logger;
+        _cache = cache;
     }
 
     public async Task<OneOf<UrlResponse, AppError>> CreateUrl(CreateUrlRequest request, CancellationToken ct = default)
@@ -88,12 +92,27 @@ public sealed class UrlService : IUrlService
 
     public async Task DeleteUrl(Guid id, CancellationToken ct = default)
     {
-        await _urlRepository.DeleteUrl(id, ct);
-        _logger.LogInformation("Url com id {id} deletada", id);
+        var url = await _urlRepository.GetUrlByIdAsync(id, ct);
+        
+        if (url != null)
+        {
+            await _urlRepository.DeleteUrl(id, ct);
+            await _cache.RemoveAsync($"url_{id}");
+            await _cache.RemoveAsync($"user_urls_{url.UserId}");
+            _logger.LogInformation("Url com id {id} deletada", id);
+        }
     }
 
     public async Task<OneOf<UrlResponse, AppError>> GetUrlById(Guid id, CancellationToken ct = default)
     {
+        var urlCache = await _cache.GetAsync<UrlResponse>($"url_{id}");
+
+        if (urlCache != null)
+        {
+            _logger.LogInformation("Dados da url {id} retornados do cache", id);
+            return urlCache;    
+        }
+
         var url = await _urlRepository.GetUrlByIdAsync(id, ct);
 
         if (url is null)
@@ -102,19 +121,32 @@ public sealed class UrlService : IUrlService
             return new UrlNotFoundError();
         }
 
+        var response = new UrlResponse(url.Id, url.UserId, url.Url, url.LastStatus, url.Interval);
+        await _cache.SetAsync<UrlResponse>($"url_{id}", response, TimeSpan.FromMinutes(3));
+
         _logger.LogInformation("Url com id {id} encontrada", id);
-        return new UrlResponse(url.Id, url.UserId, url.Url, url.LastStatus, url.Interval);
+        return response;
     }
 
     public async Task<List<UrlResponse>?> GetUrlsByUserId(Guid userId, CancellationToken ct = default)
     {
-        var urls = await _urlRepository.GetUrlsByUserIdAsync(userId, ct) ?? new List<UrlEntity>();
+        var urlsCache = await _cache.GetAsync<List<UrlResponse>>($"user_urls_{userId}");
+
+        if (urlsCache != null) {
+            _logger.LogInformation("Urls do usuário {id} retornadas do cache", userId);
+            return urlsCache;
+        }
+
+        var urls = await _urlRepository.GetUrlsByUserIdAsync(userId, ct) ?? [];
         var urlsFormated = new List<UrlResponse>();
         
         foreach (var url in urls)
         {
             urlsFormated.Add(new UrlResponse(url.Id, url.UserId, url.Url, url.LastStatus, url.Interval));
         }
+
+        if (urls.Count > 0)
+            await _cache.SetAsync<List<UrlResponse>>($"user_urls_{userId}", urlsFormated, TimeSpan.FromMinutes(3));
 
         _logger.LogInformation("Retornado urls do usuário {id}", userId);
         return urlsFormated;
@@ -157,6 +189,7 @@ public sealed class UrlService : IUrlService
         url.UpdateUrl(request.NewUrl);
         url.UpdateInterval(request.Interval);
         await _urlRepository.UpdateUrlAsync(url, ct);
+        await _cache.RemoveAsync($"user_urls_{url.UserId}");
 
         _logger.LogInformation("Url com id {id} atualizada", request.Id);
         return new UrlResponse(
