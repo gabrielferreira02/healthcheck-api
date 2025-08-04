@@ -21,6 +21,15 @@ public class UrlEntity
         int interval
     )
     {
+        if (userId == Guid.Empty)
+            throw new ArgumentException("User id cannot be empty");
+
+        if(string.IsNullOrEmpty(url))
+            throw new ArgumentException("Url cannot be empty");
+
+        if(interval <= 0)
+            throw new ArgumentException("Interval must be greater than 0");
+
         Id = Guid.NewGuid();
         UserId = userId;
         Url = url;
@@ -37,6 +46,9 @@ public class UrlEntity
 
     public void UpdateInterval(int interval)
     {
+        if(interval <= 0)
+            throw new InvalidDataException("Interval must be greater than 0");
+            
         Interval = interval;
     }
 
