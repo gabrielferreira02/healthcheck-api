@@ -15,6 +15,9 @@ public class UserEntity
         string email,
         string password)
     {
+        if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+            throw new ArgumentException("Nenhum campo pode ser vazio ou nulo");
+            
         Id = Guid.NewGuid();
         Username = username;
         Email = email;
