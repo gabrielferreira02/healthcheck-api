@@ -114,7 +114,7 @@ public class UrlEntityTest
         var faker = new Faker();
         Guid userId = Guid.NewGuid();
         var url = faker.Internet.Url();
-        int interval = faker.Random.Int();
+        int interval = faker.Random.Int(1, int.MaxValue);
         var urlEntity = new UrlEntity(userId, url, interval);
         var newInterval = faker.Random.Int(int.MinValue, 0);
 
