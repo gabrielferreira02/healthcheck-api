@@ -4,11 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HealthCheckApi.Data;
 
-internal class AppDbContext : DbContext
+public class AppDbContext : DbContext
 {
-    private readonly IConfiguration _configuration;
+    private readonly IConfiguration? _configuration;
     public DbSet<UserEntity> Users { get; set; }
     public DbSet<UrlEntity> Urls { get; set; }
+
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {}
 
     public AppDbContext(IConfiguration configuration)
     {
@@ -27,7 +29,9 @@ internal class AppDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlServer(_configuration.GetConnectionString("SqlServer"));
+        if(_configuration != null && !optionsBuilder.IsConfigured) 
+            optionsBuilder.UseSqlServer(_configuration.GetConnectionString("SqlServer"));
+
         base.OnConfiguring(optionsBuilder);
     }
 }
