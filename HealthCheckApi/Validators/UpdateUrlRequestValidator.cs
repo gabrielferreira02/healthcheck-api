@@ -19,6 +19,6 @@ public class UpdateUrlRequestValidator : AbstractValidator<UpdateUrlRequest>
 
         RuleFor(x => x.Id)
         .NotEmpty()
-        .WithMessage("User id field cannot be empty");
+        .WithMessage("Url id field cannot be empty");
     }
 }
