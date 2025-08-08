@@ -1,8 +1,6 @@
-using System;
 using System.Text.Json;
 using HealthCheckApi.Services.Abstractions;
 using Microsoft.Extensions.Caching.Distributed;
-using StackExchange.Redis;
 
 namespace HealthCheckApi.Services;
 
