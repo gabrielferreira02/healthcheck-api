@@ -27,7 +27,7 @@ public class AuthService : IAuthService
 
     public async Task<OneOf<LoginResponse, AppError>> Login(LoginRequest request, CancellationToken ct = default)
     {
-        var passwordEncoded = PasswordHasher.HashPassword(request.Password);
+        // var passwordEncoded = PasswordHasher.HashPassword(request.Password);
         var user = await _repository.GetUserByEmail(request.Email);
 
         if (user is null)
@@ -36,7 +36,7 @@ public class AuthService : IAuthService
             return new UserNotFoundError();
         }    
 
-        var isValidPassword = PasswordHasher.VerifyPassword(passwordEncoded, request.Password);
+        var isValidPassword = PasswordHasher.VerifyPassword(user.Password, request.Password);
 
         if (!isValidPassword)
         {
