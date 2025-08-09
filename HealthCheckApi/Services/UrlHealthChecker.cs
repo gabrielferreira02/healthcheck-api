@@ -10,12 +10,12 @@ namespace HealthCheckApi.Services;
 public class UrlHealthChecker : BackgroundService
 {
     private readonly ILogger<UrlHealthChecker> _logger;
-    private readonly IServiceProvider _service;
+    private readonly IServiceScopeFactory _service;
     private readonly IBus _bus;
 
     public UrlHealthChecker(
         ILogger<UrlHealthChecker> logger,
-        IServiceProvider service,
+        IServiceScopeFactory service,
         IBus bus)
     {
         _logger = logger;
@@ -26,33 +26,36 @@ public class UrlHealthChecker : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            _logger.LogInformation("Verificação iniciada");
+            await CheckUrls(stoppingToken);
+            await Task.Delay(60000, stoppingToken);
+        }
+    }
 
-            using var scope = _service.CreateScope();
-            var repository = scope.ServiceProvider.GetRequiredService<IUrlRepository>();
+    public async Task CheckUrls(CancellationToken stoppingToken)
+    {
+        _logger.LogInformation("Verificação iniciada");
 
-            var urls = await repository.GetUrlsToCheckAsync(stoppingToken);
+        using var scope = _service.CreateScope();
+        var repository = scope.ServiceProvider.GetRequiredService<IUrlRepository>();
 
-            foreach (var url in urls)
+        var urls = await repository.GetUrlsToCheckAsync(stoppingToken);
+
+        foreach (var url in urls)
+        {
+            _logger.LogInformation("Verificando: {url}", url.Url);
+            var result = await VerifyUrl(url.Url);
+
+            if (result != url.LastStatus)
             {
-                _logger.LogInformation("Verificando: {url}", url.Url);
-                var result = await VerifyUrl(url.Url);
-
-                if (result != url.LastStatus)
-                {
-                    _logger.LogInformation("Status alterado da url: {url} de {prev} para {curr}", url.Url, url.LastStatus, result);
-                    url.UpdateStatus(result);
-                    var payload = new EmailPayload(url.UserId, url.Url, result, DateTime.Now);
-                    await _bus.Publish(payload, stoppingToken);
-                }
-
-                url.UpdateNextCheck();
-                await repository.UpdateUrlAsync(url, stoppingToken);
+                _logger.LogInformation("Status alterado da url: {url} de {prev} para {curr}", url.Url, url.LastStatus, result);
+                url.UpdateStatus(result);
+                var payload = new EmailPayload(url.UserId, url.Url, result, DateTime.Now);
+                await _bus.Publish(payload, stoppingToken);
             }
 
-
+            url.UpdateNextCheck();
+            await repository.UpdateUrlAsync(url, stoppingToken);
             _logger.LogInformation("Verificação finalizada");
-            await Task.Delay(60000, stoppingToken);
         }
     }
 
