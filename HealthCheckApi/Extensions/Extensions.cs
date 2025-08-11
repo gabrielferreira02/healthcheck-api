@@ -11,6 +11,7 @@ using HealthCheckApi.Services.Abstractions;
 using HealthCheckApi.Validators;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.OpenApi.Models;
 
 namespace HealthCheckApi.Extensions;
 
@@ -63,6 +64,39 @@ public static class Extensions
         .AddJwtBearer(options => options.TokenValidationParameters = TokenHelper.ValidateToken(configuration));
 
         services.AddAuthorization();
+
+        // Add Authentication scheme for scalar
+        services.AddOpenApi(options =>
+        {
+            options.AddDocumentTransformer((document, context, cancellationToken) =>
+            {
+                document.Components ??= new OpenApiComponents();
+                document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    Description = "Informe o token JWT no formato: Bearer {seu_token}"
+                };
+
+                document.SecurityRequirements.Add(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Id = "Bearer",
+                                Type = ReferenceType.SecurityScheme
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+
+                return Task.CompletedTask;
+            });
+        });
 
         return services;
     }
