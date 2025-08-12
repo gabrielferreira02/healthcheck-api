@@ -1,5 +1,12 @@
 # Api de monitoramento de status
 
+![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=csharp&logoColor=white)
+![.Net](https://img.shields.io/badge/.NET-5C2D91?style=for-the-badge&logo=.net&logoColor=white)
+![MicrosoftSQLServer](https://img.shields.io/badge/Microsoft%20SQL%20Server-CC2927?style=for-the-badge&logo=microsoft%20sql%20server&logoColor=white)
+![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)
+![RabbitMQ](https://img.shields.io/badge/Rabbitmq-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+
 # Sobre o projeto
 
 Api desenvolvida usando C#, ASP.NET, EF, Sql Server, RabbitMq e redis. Foi utilizada uma arquitetura monolítica orientada a eventos e em cache para otmização do tempo de respota para o usuário. A ideia central do projeto é monitorar a saúde de um determinado endpoint verificando se este está online ou offline. O monitoramento é feito em um background service que é executado a cada minuto. Ao ser verificada uma url, caso seu status mude, é simulado um envio de email para o usuário dono da url cadastrada.
