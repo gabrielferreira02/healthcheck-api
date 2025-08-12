@@ -1,5 +1,7 @@
+using System.ComponentModel;
 using HealthCheckApi.Dto;
 using HealthCheckApi.Enums;
+using HealthCheckApi.Errors;
 using HealthCheckApi.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,8 +19,9 @@ public sealed class UserController : ControllerBase
         _userService = userService;
     }
 
-
     [HttpPost]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AppError), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request, CancellationToken ct)
     {
         var result = await _userService.CreateUser(request, ct);
@@ -39,6 +42,9 @@ public sealed class UserController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "USER")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteUser([FromRoute] Guid id, CancellationToken ct)
     {
         await _userService.DeleteUser(id, ct);
@@ -47,6 +53,10 @@ public sealed class UserController : ControllerBase
 
     [HttpGet("{id}")]
     [Authorize(Roles = "USER")]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetUserById([FromRoute] Guid id, CancellationToken ct)
     {
         var result = await _userService.GetUserById(id, ct);

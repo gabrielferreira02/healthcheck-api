@@ -1,5 +1,7 @@
+using System.ComponentModel;
 using HealthCheckApi.Dto;
 using HealthCheckApi.Enums;
+using HealthCheckApi.Errors;
 using HealthCheckApi.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,6 +22,11 @@ public class UrlController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "USER")]
+    [ProducesResponseType(typeof(UrlResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(AppError), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateUrl([FromBody] CreateUrlRequest request, CancellationToken ct)
     {
         var result = await _urlService.CreateUrl(request, ct);
@@ -43,6 +50,11 @@ public class UrlController : ControllerBase
 
     [HttpPut]
     [Authorize(Roles = "USER")]
+    [ProducesResponseType(typeof(UrlResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(AppError), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateUrl([FromBody] UpdateUrlRequest request, CancellationToken ct)
     {
         var result = await _urlService.UpdateUrlById(request, ct);
@@ -66,6 +78,9 @@ public class UrlController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "USER")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteUrl([FromRoute] Guid id, CancellationToken ct)
     {
         await _urlService.DeleteUrl(id, ct);
@@ -74,6 +89,10 @@ public class UrlController : ControllerBase
 
     [HttpGet("{id}")]
     [Authorize(Roles = "USER")]
+    [ProducesResponseType(typeof(UrlResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetUrlById([FromRoute] Guid id, CancellationToken ct)
     {
         var result = await _urlService.GetUrlById(id, ct);
@@ -91,6 +110,9 @@ public class UrlController : ControllerBase
 
     [HttpGet("user/{id}")]
     [Authorize(Roles = "USER")]
+    [ProducesResponseType(typeof(List<UrlResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetUserUrls([FromRoute] Guid id, CancellationToken ct)
     {
         var urls = await _urlService.GetUrlsByUserId(id, ct);

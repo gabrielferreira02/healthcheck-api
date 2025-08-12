@@ -1,6 +1,9 @@
+using System.ComponentModel;
 using HealthCheckApi.Dto;
 using HealthCheckApi.Enums;
+using HealthCheckApi.Errors;
 using HealthCheckApi.Services.Abstractions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HealthCheckApi.Controller;
@@ -17,6 +20,9 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AppError), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(AppError), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct)
     {
         var result = await _authService.Login(request, ct);
@@ -36,6 +42,10 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh")]
+    [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AppError), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(AppError), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(AppError), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request, CancellationToken ct)
     {
         var result = await _authService.RefreshToken(request, ct);
